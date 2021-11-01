@@ -5,22 +5,16 @@
 
           <div class="m-header">
             <slot name="header">
-              default header
             </slot>
           </div>
 
           <div class="m-body">
             <slot name="body">
-              default body
             </slot>
           </div>
 
           <div class="m-footer">
             <slot name="footer">
-              default footer
-              <button class="modal-default-button" @click="$emit('close')">
-                OK
-              </button>
             </slot>
           </div>
         </div>

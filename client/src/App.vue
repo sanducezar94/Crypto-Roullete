@@ -49,9 +49,7 @@ export default {
     };
   },
   async mounted() {
-    const unsubscribe = this.$store.subscribeAction(async (action, state) => {
-      if (action.type === "retrieveUserData") {
-        const bets = await fetch(this.$store.getters.getHost + "bets", {
+ const bets = await fetch(this.$store.getters.getHost + "bets", {
           method: "GET",
           headers: {
             "content-type": "application/json",
@@ -59,8 +57,6 @@ export default {
         });
         const result = await bets.json();
         this.$store.dispatch("populateBets", result);
-      }
-    });
   },
 };
 </script>

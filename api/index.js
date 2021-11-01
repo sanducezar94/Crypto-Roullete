@@ -8,6 +8,7 @@ const fs = require("fs");
 const path = require("path");
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || "development";
+const Roullete = require('./engine/roullete');
 
 async function initialize() {
   await sequelize.sync();
@@ -65,6 +66,19 @@ io.on("connection", (socket) => {
       sockets[file.slice(-3)] = socketFile;
     });
 });
+
+function startGameLoop(server) {
+  var lastUpdate = Date.now();
+  const roullete = new Roullete();
+  const interval = setInterval(() => {
+      let now = Date.now();
+      var dt = (now - lastUpdate);
+      lastUpdate = now;
+      roullete.update(dt, server);
+  }, 0);
+}
+
+startGameLoop(io);
 
 server.listen(3001, () => {
   console.log("Server started on port 3001");

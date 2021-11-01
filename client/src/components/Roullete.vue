@@ -1,10 +1,26 @@
 <template>
-  <div class='position-relative'>
-    <div class='text-golden'> {{ Math.floor(distance) }} , {{ currentNumber()}}, {{ blockArray[36 - result] }}
-          <button v-on:click='newRound()' class='ms-4 btn btn-primary'>Spin</button>
+  <div
+    class="position-relative d-flex justify-content-center align-items-center"
+  >
+    <div
+      style="z-index: 20"
+      class="text-golden position-absolute top-50 text-center"
+      v-if="isRoundFinished()"
+    >
+      New round in <br />
+      {{ (20 - roundTimer).toFixed(1) }} s
     </div>
 
-        <div class="roullete-pin-top"></div>
+    <div
+      style="z-index: 20"
+      class="text-golden position-absolute top-50 text-center"
+      v-if="isRoundPaused()"
+    >
+      Result is {{ result }} <br />
+      {{ (10 - roundTimer).toFixed(1) }} s
+    </div>
+
+    <div class="roullete-pin-top"></div>
     <div
       class="roullete-container"
       style="border-radius: 16px"
@@ -12,11 +28,12 @@
     >
       <div
         class="roullete"
-        v-bind:style="{ transform: 'rotate(' + x + 'deg)' }"
+        v-bind:style="{ transform: 'rotate(' + angle + 'deg)' }"
       >
         <div class="position-absolute roullete-outline"></div>
         <div class="position-relative">
-          <div v-bind:data-index='index'
+          <div
+            v-bind:data-index="index"
             class="block"
             v-bind:class="{
               blue: block === 2,
@@ -45,6 +62,11 @@
 const BLOCK_SIZE = 64;
 const BLOCK_GROUP = 15;
 const ZERO_BLOCK_OCCURENCE = 7;
+import { ROULLETE_PHASE } from "../constants/constants.js";
+
+const lerp = (start, end, amt) => {
+  return (1 - amt) * start + amt * end;
+};
 
 export default {
   name: "Roullete",
@@ -64,42 +86,37 @@ export default {
   },
   data() {
     return {
-      startBlock: 0,
-      endBlock: 45,
-      x: 0, //-((this.blocks / 2) * BLOCK_SIZE - BLOCK_SIZE * 4),
-      fps: 120,
-      ticker: null,
+      angle: 0,
       drawKey: 0,
-      velocity:0,
-      acceleration: 0,
       moving: false,
       blockArray: [],
-      distance: 0,
-      totalDistance: 0,
-      result: 0,
+      packets: [],
+      roundTimer: 0,
+      roundPhase: ROULLETE_PHASE.FINISHED,
+      previousRoundPhase: ROULLETE_PHASE.FINISHED
     };
   },
   mounted: function () {
-    let index = 1;
-    this.ticker = setInterval(() => {
-      this.update();
-    }, 1000 / this.fps);
     this.updateBlocks();
-    this.moving = true;
+
+    this.$socket.on("update_wheel", (args) => {
+      this.insertPacket(args);
+    });
+
+    this.$socket.on("init_wheel", (args) => {
+      this.angle = args.angle;
+    });
+
+    const interval = setInterval(() => {
+      this.updateRoullete();
+    }, 1000 / 60);
   },
   methods: {
-    newRound() {
-      const moveDistance = Math.floor(90 + Math.random() * 15) * 10;
-      this.totalDistance = this.x + moveDistance;
-      const speed = 2 + Math.random() * 4;
-      const acceleration = -(speed * speed) / (2 * moveDistance);
-      const result = (Math.floor((moveDistance % 360) / 10) + this.result) % 36;
-      console.log('Result index:', result);
-      this.result = result;
-      this.velocity = speed;
-      this.acceleration = acceleration;
-      this.moving = true;
-      console.log('Wheel started moving at: ' + speed + ' with acceleration: ' + acceleration + ' for a total of ' + moveDistance/10 + ' blocks.');
+    isRoundFinished() {
+      return this.roundPhase === ROULLETE_PHASE.FINISHED;
+    },
+    isRoundPaused() {
+      return this.roundPhase === ROULLETE_PHASE.PAUSED;
     },
     currentNumber() {
       const index = Math.floor((this.distance % 360) / 10);
@@ -122,31 +139,25 @@ export default {
         height: this.radius * 2.5 + "px",
       };
     },
-    update() {
-      if (!this.moving) return;
+    insertPacket(packet) {
+      this.packets.unshift(packet);
+      if (this.packets.length > 10) this.packets.pop();
+    },
+    updateRoullete() {
+      if (this.packets.length === 0 || !this.packets) return;
+      if (this.angle === 0) this.angle = this.packets[0].angle;
+      this.angle = lerp(this.angle, this.packets[0].angle, 0.05);
+      this.roundTimer = (
+        lerp(this.roundTimer, this.packets[0].roundTimer, 1) / 1000
+      ).toFixed(1);
+      this.previousRoundPhase = this.roundPhase;
+      this.roundPhase = this.packets[0].roundPhase;
 
-      this.x += this.velocity;
-      this.distance += this.velocity;
-      this.velocity += this.acceleration;
-
-      if(this.distance + this.velocity >= this.totalDistance){
-        this.x = this.totalDistance;
-        this.velocity = 0;
-        this.distance = this.totalDistance;
-        this.moving = false;
-        console.log('FINAL DISTANCE:', this.distance);
-      }
-      if (this.velocity <= 0) {
-        this.moving = false;
-
-        const blocks = document.getElementsByClassName("block");
-        /* setTimeout(() => {
-          this.x -= 15 * BLOCK_SIZE;
-        }, 1000);*/
+      if(this.roundPhase !== this.previousRoundPhase){
+        this.$store.commit('setRoundPhase', this.roundPhase);
       }
     },
     updateBlocks() {
-      let index = 0;
       for (let i = 0; i < this.blocks; i++) {
         if (i === 0) {
           this.blockArray.push(20);
@@ -163,23 +174,6 @@ export default {
           }
         }
       }
-      /*let zeroBlock = 0;
-      while (index <= this.blocks) {
-        if (
-          index == ZERO_BLOCK_OCCURENCE ||
-          zeroBlock == ZERO_BLOCK_OCCURENCE * 2
-        ) {
-          this.blockArray.push(0);
-          zeroBlock = 0;
-        }
-        if (index % 2 == 0) {
-          this.blockArray.push(1 + (Math.floor(index / 2) % 7));
-        } else {
-          this.blockArray.push(14 - (Math.floor(index / 2) % 7));
-        }
-        zeroBlock += 1;
-        index += 1;
-      }*/
     },
   },
 };
@@ -257,6 +251,7 @@ export default {
   box-shadow: 1px 5px rgba(0, 0, 0, 0.1);
   z-index: 5;
   left: calc(50% - 4px);
+  top: 0;
   background-color: #e7e4e7;
   border-top-left-radius: 20%;
   border-top-right-radius: 20%;

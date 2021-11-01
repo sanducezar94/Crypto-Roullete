@@ -2,7 +2,7 @@
   <div>
     <div
       class="container interactable mb-3"
-      v-on:click="showBetModal = true"
+      v-on:click="openBetModal()"
       v-bind:class="color"
     >
       <div class="back-light" v-bind:class="color"></div>
@@ -70,6 +70,7 @@
 
 <script>
 import Modal from "./Modal";
+import { ROULLETE_PHASE } from "../constants/constants.js";
 
 export default {
   name: "BetBox",
@@ -95,16 +96,19 @@ export default {
   },
   mounted() {
     this.$socket.on("make_bet", (bet) => {
-      if (bet.color !== this.color) return;
       console.log(bet);
+      if (bet.color !== this.color) return;
       this.addBet(bet);
       this.closeBetModal();
+    });
+
+    this.$socket.on("clear_bets", (args) => {
+      this.bets = [];
     });
 
     const unsubscribe = this.$store.subscribeAction(async (action, state) => {
       if (action.type === "populateBets") {
         const bets = action.payload;
-  console.log(bets);
         for (let i = 0; i < bets.length; i++) {
           if (bets[i].color === this.color) {
             this.addBet(bets[i]);
@@ -114,6 +118,10 @@ export default {
     });
   },
   methods: {
+    openBetModal() {
+      if (this.$store.getters.getRoundPhase !== ROULLETE_PHASE.FINISHED) return;
+      this.showBetModal = true;
+    },
     closeBetModal() {
       this.showBetModal = false;
       this.isLoading = false;
@@ -141,10 +149,12 @@ export default {
         return;
       }
 
-      this.isLoading = true;
       const betAmount = parseInt(this.betAmount);
+      if(betAmount <= 0) {
+         this.closeBetModal();
+         return;
+      }
 
-      this.isLoading = false;
       const bet = {
         wallet: this.$store.getters.getWallet.wallet,
         amount: betAmount,
@@ -152,14 +162,24 @@ export default {
         color: this.color,
       };
       this.$socket.emit("make_bet", bet);
-      this.addBet(bet);
       this.closeBetModal();
     },
     removeBet(userId) {
+      if (this.$store.getters.getRoundPhase !== ROULLETE_PHASE.FINISHED) return;
+      const bet = this.bets.filter((c) => c.userId === userId)[0];
+      if (!bet) return;
       this.bets = this.bets.filter((c) => c.userId !== userId);
+      this.$socket.emit("refund_bet", bet);
     },
   },
   computed: {},
+  watch: {
+    'betAmount'(newVal) {
+      if(newVal > this.$store.getters.getUser.balance){
+        this.betAmount = this.$store.getters.getUser.balance;
+      }
+    }
+  }
 };
 </script>
 
