@@ -2,7 +2,7 @@
 
 A small project which tries to integrate Harmony Network Chain Smart Contracts with a gambling game. The users can make crypto deposits by using the Harmony Chain governance token $ONE.
 
-[![Youtube preview video](https://imgur.com/1d6bdf46-7071-42e6-89a1-30c00fa6ed89)](https://www.youtube.com/watch?v=vCWp1Ltj9ls)
+[![Youtube preview video](https://i.imgur.com/472V3HS.png)](https://www.youtube.com/watch?v=vCWp1Ltj9ls)
 
 
 
