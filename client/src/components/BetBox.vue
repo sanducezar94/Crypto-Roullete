@@ -235,25 +235,25 @@ export default {
 .container.interactable.red:hover {
   color: white !important;
   background-color: var(--var-red-chip);
-  box-shadow: 0 0px 36px 0 var(--var-red-chip);;
+  box-shadow: 0 0px 36px 0 var(--var-red-chip);
 }
 
 .container.interactable.purple:hover {
   color: white !important;
-  background-color: var(--var-purple-chip);;
-  box-shadow: 0 0px 36px 0 var(--var-purple-chip);;
+  background-color: var(--var-purple-chip);
+  box-shadow: 0 0px 36px 0 var(--var-purple-chip);
 }
 
 .container.interactable.green:hover {
   color: white !important;
-  background-color: var(--var-green-chip);;
-  box-shadow: 0 0px 36px 0 var(--var-green-chip);;
+  background-color: var(--var-green-chip);
+  box-shadow: 0 0px 36px 0 var(--var-green-chip);
 }
 
 .container.interactable.blue:hover {
   color: white !important;
-  background-color: var(--var-blue-chip);;
-  box-shadow: 0 0px 36px 0 var(--var-blue-chip);;
+  background-color: var(--var-blue-chip);
+  box-shadow: 0 0px 36px 0 var(--var-blue-chip);
 }
 
 .container.interactable:hover h2 {
@@ -271,16 +271,16 @@ export default {
 }
 
 .back-light.red {
-  box-shadow: 0px 0px 96px 64px var(--var-red-chip);;
+  box-shadow: 0px 0px 96px 64px var(--var-red-chip);
 }
 .back-light.green {
-  box-shadow: 0px 0px 96px 64px var(--var-green-chip);;
+  box-shadow: 0px 0px 96px 64px var(--var-green-chip);
 }
 .back-light.blue {
-  box-shadow: 0px 0px 96px 64px var(--var-blue-chip);;
+  box-shadow: 0px 0px 96px 64px var(--var-blue-chip);
 }
 .back-light.purple {
-  box-shadow: 0px 0px 96px 64px var(--var-purple-chip);;
+  box-shadow: 0px 0px 96px 64px var(--var-purple-chip);
 }
 
 .container h2 {
