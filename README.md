@@ -13,7 +13,7 @@ This project is a WIP
 TO DO & IMPROVEMENTS: (maybe)
 	
 	
-		Deploy roullete smart contract and listen integrate with the server
+		Deploy roullete smart contract and integrate with the server
 		Create a new ERC20 Token which will be used to play the game
 		Create a jackpot pool which will have a chance to pop, rewarding the winners
 		Create a separate room for a Lottery, each ticket bought will contribute to the winning pool with 90% of it's value. 
