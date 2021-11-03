@@ -1,11 +1,5 @@
 const _roundsRepo = require("../repository/rounds");
-const { move } = require("../routes/bets");
-
-const ROULLETE_PHASE = {
-  PAUSED: 0,
-  FINISHED: 1,
-  SPINNING: 2,
-};
+const ROULLETE_PHASE = require("../constants/game.js");
 
 class Roullete {
   constructor() {

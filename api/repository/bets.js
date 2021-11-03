@@ -1,4 +1,6 @@
-export default {
+const { User, Bet, Round } = require("../models");
+
+const repo = {
   getCurrentBets: async () => {
     const round = await Round.findAll({
       order: [["createdAt", "DESC"]],
@@ -12,3 +14,5 @@ export default {
     return bets;
   },
 };
+
+module.exports = repo;

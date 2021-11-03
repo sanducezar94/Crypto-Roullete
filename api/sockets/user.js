@@ -53,6 +53,25 @@ const betsIO = (socket) => {
       socket.emit("update_credit", newBalance);
     } catch (err) {}
   });
+
+  socket.on("add_credit", async (order) => {
+    try {
+      validate(order, ERROR_MESSAGES.INVALID_REQUEST);
+
+      console.log(order);
+
+      const user = await User.findAll({ where: { id: order.userId } });
+
+      validate(user, ERROR_MESSAGES.INVALID_REQUEST);
+
+      const newBalance = user[0].balance + order.amount;
+      await User.update(
+        { balance: newBalance },
+        { where: { id: order.userId } }
+      );
+      socket.emit("update_credit", newBalance);
+    } catch (err) {}
+  });
 };
 
 module.exports = betsIO;

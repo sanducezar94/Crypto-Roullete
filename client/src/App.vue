@@ -10,16 +10,16 @@
 
         <div class="row m-5">
           <div class="col-3">
-            <BetBox :color="'blue'" :title="'2×'" />
+            <BetBox :color="'blue'" :mult='2' :title="'2×'" />
           </div>
           <div class="col-3">
-            <BetBox :color="'purple'" :title="'3×'" />
+            <BetBox :color="'purple'" :mult='3' :title="'3×'" />
           </div>
           <div class="col-3">
-            <BetBox :color="'red'" :title="'5×'" />
+            <BetBox :color="'red'" :mult='5' :title="'5×'" />
           </div>
           <div class="col-3">
-            <BetBox :color="'green'" :title="'20×'" />
+            <BetBox :color="'green'" :mult='20' :title="'20×'" />
           </div>
         </div>
       </div>

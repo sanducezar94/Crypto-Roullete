@@ -137,6 +137,9 @@ export default {
     });
   },
   methods: {
+    getMultiplier(){
+
+    },
     openBetModal() {
       if (this.$store.getters.getRoundPhase !== ROULLETE_PHASE.FINISHED) return;
       this.showBetModal = true;
