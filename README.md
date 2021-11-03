@@ -4,7 +4,7 @@ A small project which tries to integrate Harmony Network Chain Smart Contracts w
 
 
 
-This project is a WIP:
+This project is a WIP
 
 TO DO & IMPROVEMENTS: 
 	1. Create a new ERC20 Token which will be used to play the game, stake, provide liquidity and withdraw.
