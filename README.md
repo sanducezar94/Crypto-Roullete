@@ -10,7 +10,7 @@ A small project which tries to integrate Harmony Network Chain Smart Contracts w
 
 This project is a WIP
 
-TO DO & IMPROVEMENTS: 
+TO DO & IMPROVEMENTS: (maybe)
 	
 	
 		Deploy roullete smart contract and listen integrate with the server
