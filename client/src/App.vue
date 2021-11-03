@@ -49,14 +49,14 @@ export default {
     };
   },
   async mounted() {
- const bets = await fetch(this.$store.getters.getHost + "bets", {
-          method: "GET",
-          headers: {
-            "content-type": "application/json",
-          },
-        });
-        const result = await bets.json();
-        this.$store.dispatch("populateBets", result);
+    const bets = await fetch(this.$store.getters.getHost + "bets", {
+      method: "GET",
+      headers: {
+        "content-type": "application/json",
+      },
+    });
+    const result = await bets.json();
+    this.$store.dispatch("populateBets", result);
   },
 };
 </script>
@@ -69,38 +69,43 @@ export default {
   text-align: center;
   color: #2c3e50;
   background-color: #14152b;
+  --var-blue-chip: #38427e;
+  --var-green-chip: #428675;
+  --var-red-chip: #9a3546;
+  --var-purple-chip: #81359a;
+
 }
 
 .blue {
-  background-color: #38427e;
+  background-color: var(--var-blue-chip);
 }
 
 .green {
-  background-color: #428675;
+  background-color: var(--var-green-chip);
 }
 
 .purple {
-  background-color: #81359a;
+  background-color: var(--var-purple-chip);
 }
 
 .red {
-  background-color: #9a3546;
+  background-color: var(--var-red-chip);
 }
 
 .text-blue {
-  color: #38427e;
+  color: var(--var-blue-chip);
 }
 
 .text-green {
-  color: #428675 !important;
+  color: var(--var-green-chip);
 }
 
 .text-purple {
-  color: #81359a;
+  color: var(--var-purple-chip);
 }
 
 .text-red {
-  color: #9a3546;
+  color: var(--var-red-chip);
 }
 
 .text-golden {

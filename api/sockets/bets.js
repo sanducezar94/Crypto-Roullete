@@ -1,6 +1,6 @@
 const { User, Bet, Round } = require("../models");
-const _roundRepo = require("../repository/rounds.js");
 const ERROR_MESSAGES = require("../constants/messages.js");
+const _roundRepo = require("../repository/rounds.js");
 const validate = require("../services/validator.js");
 
 const betsIO = (socket) => {
@@ -31,30 +31,36 @@ const betsIO = (socket) => {
       socket.broadcast.emit("make_bet", bet);
       socket.emit("make_bet", bet);
     } catch (err) {
-      console.log(err);
+      //console.log(err);
     }
   });
 
-  socket.on("refund_bet", async (...args) => {
+  socket.on("refund_bet", async (bet) => {
     try {
-      validate(args, ERROR_MESSAGES.INVALID_REQUEST);
+      validate(bet, ERROR_MESSAGES.INVALID_REQUEST);
 
-      const user = await User.findAll({ where: { id: args[0].userId } });
-      validate(user, ERROR_MESSAGES.NO_USER);
+      const dbUser = await User.findAll({ where: { id: bet.userId } });
+      validate(dbUser, ERROR_MESSAGES.NO_USER);
 
-      const newBalance = user[0].balance + args[0].amount;
-      const result = await Bet.destroy({ where: { id: args[0].id } });
+      const dbBet = await Bet.findOne({ where: { id: bet.id }});
+      validate(dbBet, ERROR_MESSAGES.INVALID_REQUEST);
+
+      const newBalance = dbUser[0].balance + bet.amount;
+      const result = await Bet.destroy({ where: { id: bet.id } });
       validate(result === 0, ERROR_MESSAGES.INVALID_REQUEST);
 
       const updatedUser = await User.update(
         { balance: newBalance },
-        { where: { id: args[0].userId } }
+        { where: { id: bet.userId } }
       );
       validate(updatedUser.length === 0, ERROR_MESSAGES.INVALID_REQUEST);
 
+      console.log('Bet Removed', bet);
       socket.emit("update_credit", updatedUser[0].newBalance);
+      socket.broadcast.emit("remove_bet", bet);
+      socket.emit("remove_bet", bet);
     } catch (err) {
-      //Logger.log('');
+      //console.log(err);
     }
   });
 };

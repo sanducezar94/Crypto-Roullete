@@ -3,12 +3,12 @@
     <div
       class="container interactable mb-3"
       v-on:click="openBetModal()"
-      v-bind:class="color"
+      v-bind:class="getContainerClass()"
     >
       <div class="back-light" v-bind:class="color"></div>
       <h2 class="text-golden">{{ title }}</h2>
     </div>
-    <div class="container pt-3 bet-box">
+    <div class="container pt-3 bet-box" v-bind:class="getContainerClass()">
       <div v-for="(bet, index) in bets" :key="index">
         <span class="text-golden"> bet</span> - {{ bet.amount }} $ONE
         <span
@@ -92,18 +92,37 @@ export default {
       betId: 0,
       isLoading: false,
       showBetModal: false,
+      faded: false,
+      won: false
     };
   },
   mounted() {
     this.$socket.on("make_bet", (bet) => {
-      console.log(bet);
       if (bet.color !== this.color) return;
       this.addBet(bet);
       this.closeBetModal();
     });
 
+    this.$socket.on("win_bet", (color) => {
+      if (color === this.color) {
+        this.faded = false;
+        this.won = true;
+      }
+    });
+
+    this.$socket.on("start_wheel", () => {
+      this.faded = true;
+    });
+
+    this.$socket.on("remove_bet", (bet) => {
+      if (bet.color !== this.color) return;
+      this.bets = this.bets.filter((c) => c.userId !== bet.userId);
+    });
+
     this.$socket.on("clear_bets", (args) => {
       this.bets = [];
+      this.faded = false;
+      this.won = false;
     });
 
     const unsubscribe = this.$store.subscribeAction(async (action, state) => {
@@ -129,6 +148,10 @@ export default {
     getTitleColor() {
       return "text-" + this.color;
     },
+    getContainerClass() {
+      if (this.faded) return "faded";
+      return this.color;
+    },
     isCurrentUser(userId) {
       return userId === this.$store.getters.getUser.id;
     },
@@ -150,9 +173,9 @@ export default {
       }
 
       const betAmount = parseInt(this.betAmount);
-      if(betAmount <= 0) {
-         this.closeBetModal();
-         return;
+      if (betAmount <= 0) {
+        this.closeBetModal();
+        return;
       }
 
       const bet = {
@@ -168,18 +191,17 @@ export default {
       if (this.$store.getters.getRoundPhase !== ROULLETE_PHASE.FINISHED) return;
       const bet = this.bets.filter((c) => c.userId === userId)[0];
       if (!bet) return;
-      this.bets = this.bets.filter((c) => c.userId !== userId);
       this.$socket.emit("refund_bet", bet);
     },
   },
   computed: {},
   watch: {
-    'betAmount'(newVal) {
-      if(newVal > this.$store.getters.getUser.balance){
+    betAmount(newVal) {
+      if (newVal > this.$store.getters.getUser.balance) {
         this.betAmount = this.$store.getters.getUser.balance;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -196,6 +218,11 @@ export default {
   border-radius: 10px;
   color: white;
   transition: 0.5s all;
+}
+
+.container.faded {
+  opacity: 0.5 !important;
+  cursor: default !important;
 }
 
 .container.interactable {

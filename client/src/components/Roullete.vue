@@ -40,6 +40,7 @@
               green: block === 20,
               purple: block === 3,
               red: block === 5,
+              joker: block === 666
             }"
             v-bind:style="roulleteBlockStyle(index)"
             v-for="(block, index) in blockArray"
@@ -49,7 +50,7 @@
               style="transform: rotate(90deg); color: #ffd309; z-index: 25"
               class="w-100 h-100 fw-bold"
             >
-              {{ block }}
+              {{ getBlockText(block) }}
             </div>
           </div>
         </div>
@@ -89,7 +90,7 @@ export default {
       angle: 0,
       drawKey: 0,
       moving: false,
-      blockArray: [],
+      blockArray: [20, 3, 2, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 3, 2, 3,2, 5, 2, 3, 2, 3, 2, 3, 2, 2, 5, 2],
       packets: [],
       roundTimer: 0,
       roundPhase: ROULLETE_PHASE.FINISHED,
@@ -97,8 +98,6 @@ export default {
     };
   },
   mounted: function () {
-    this.updateBlocks();
-
     this.$socket.on("update_wheel", (args) => {
       this.insertPacket(args);
     });
@@ -112,6 +111,10 @@ export default {
     }, 1000 / 60);
   },
   methods: {
+    getBlockText(block){
+      if(block === 666) return '🤡';
+      return block;
+    },
     isRoundFinished() {
       return this.roundPhase === ROULLETE_PHASE.FINISHED;
     },
@@ -123,7 +126,7 @@ export default {
       return this.blockArray[index];
     },
     roulleteBlockStyle(index) {
-      const degree = index * 10 + 270;
+      const degree = index * 10 - 90;
       const radian = (degree * Math.PI) / 180;
       const left = Math.floor(Math.cos(radian) * this.radius) - 18;
       const top = Math.floor(Math.sin(radian) * this.radius) - 16; //because block height is 2 pixel smaller than the width
@@ -155,24 +158,6 @@ export default {
 
       if(this.roundPhase !== this.previousRoundPhase){
         this.$store.commit('setRoundPhase', this.roundPhase);
-      }
-    },
-    updateBlocks() {
-      for (let i = 0; i < this.blocks; i++) {
-        if (i === 0) {
-          this.blockArray.push(20);
-          continue;
-        }
-        if (i % 2 === 1) {
-          this.blockArray.push(2);
-        }
-        if (i % 2 === 0) {
-          if (i % 5 === 0) {
-            this.blockArray.push(5);
-          } else {
-            this.blockArray.push(3);
-          }
-        }
       }
     },
   },

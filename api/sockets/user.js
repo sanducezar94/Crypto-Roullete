@@ -29,12 +29,12 @@ const betsIO = (socket) => {
       }).catch((err) => console.error("Error creating new user."));
       socket.emit("log_in", newUser);
     } catch (err) {
-      console.log(err);
+      //console.log(err);
     }
   });
 
   socket.on("disconnect", (socket) => {
-    console.log("User disconnected", socket.id);
+    //console.log("User disconnected", socket.id);
   });
 
   socket.on("buy_credit", async (order) => {

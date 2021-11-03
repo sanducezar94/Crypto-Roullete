@@ -8,6 +8,7 @@ const fs = require("fs");
 const path = require("path");
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || "development";
+const config = require(__dirname + "/./config/config.json")[env];
 const Roullete = require('./engine/roullete');
 
 async function initialize() {
@@ -17,7 +18,7 @@ async function initialize() {
 initialize();
 
 const corsOptions = {
-  origin: "http://localhost:8080",
+  origin: config['hostURI'],
   credentials: true, //access-control-allow-credentials:true
   optionSuccessStatus: 200,
   methods: ["GET", "POST"],
@@ -29,7 +30,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true })) 
 
 app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:8080"); // update to match the domain you will make the request from
+  res.header("Access-Control-Allow-Origin", config['hostURI']); // update to match the domain you will make the request from
   res.header(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept"
@@ -46,7 +47,7 @@ app.use("/rounds", rounds);
 const server = http.createServer(app).listen("8080", "localhost");
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:8080",
+    origin: config['hostURI'],
     methods: ["GET", "POST"],
   },
 });

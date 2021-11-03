@@ -16,7 +16,7 @@ export default {
     return {
       account: "",
       isAuthorised: false,
-      networkId: 1666700000,
+      networkId: HARMONY_TESTNET,
     };
   },
   async mounted() {

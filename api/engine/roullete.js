@@ -1,4 +1,5 @@
 const _roundsRepo = require("../repository/rounds");
+const { move } = require("../routes/bets");
 
 const ROULLETE_PHASE = {
   PAUSED: 0,
@@ -19,6 +20,8 @@ class Roullete {
     this.updateInterval = 0.1 * 1000;
     this.round = null;
 
+    this.totalBlocks = 36;
+    this.blockArray = [20, 3, 2, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 3, 2, 5, 2, 3, 2, 3, 2, 3, 2, 3,2, 5, 2, 3, 2, 3, 2, 3, 2, 2, 5, 2],
     this.roundPhase = ROULLETE_PHASE.FINISHED;
     this.roundTimer = 0;
     this.prepareNewRound();
@@ -30,7 +33,7 @@ class Roullete {
     switch (this.roundPhase) {
       case ROULLETE_PHASE.PAUSED: {
         this.roundTimer += dt;
-        if (this.roundTimer >= 10 * 1000) {
+        if (this.roundTimer >= 5 * 1000) {
           server.emit("clear_bets");
           this.prepareNewRound(server);
           this.roundPhase = ROULLETE_PHASE.FINISHED;
@@ -55,57 +58,64 @@ class Roullete {
       this.updateTimer = 0;
     }
 
-    this.spinWheel();
+    this.spinWheel(server);
   }
 
-  spinWheel() {
+  spinWheel(server) {
     if (!this.moving || this.roundPhase !== ROULLETE_PHASE.SPINNING) return;
 
-    this.angle += this.angleVelocity;
+    this.angle -= this.angleVelocity;
     this.distance += this.angleVelocity;
     this.angleVelocity += this.acceleration;
 
     if (this.distance + this.angleVelocity >= this.totalDistance) {
-      this.angle = this.totalDistance;
+      this.angle = -this.totalDistance;
       this.angleVelocity = 0;
       this.distance = this.totalDistance;
       this.moving = false;
       this.roundPhase = ROULLETE_PHASE.PAUSED;
-    }
 
-    if (this.angleVelocity <= 0) {
-      this.moving = false;
-      this.roundPhase = ROULLETE_PHASE.PAUSED;
+      server.emit('win_bet', this.getResultColor());
     }
   }
 
+  getResultColor(){
+      switch(this.blockArray[this.result]){
+        case 2:
+            return 'blue';
+        case 3:
+            return 'purple';
+        case 5:
+            return 'red';
+        case 20:
+            return 'green';
+        case 666:
+            return 'joker';
+      }
+  }
+
   async prepareNewRound() {
-    const moveDistance = Math.floor(120 + Math.random() * 15) * 10;
+    const blockNumber = Math.floor(90 + Math.random() * 90);
+
+    const moveDistance = blockNumber * 10;
     const angleVelocity = 2 + Math.random() * 3;
     const acceleration = -(angleVelocity * angleVelocity) / (2 * moveDistance);
-    const result = (Math.floor((moveDistance % 360) / 10) + this.result) % 36;
 
-    this.totalDistance = this.angle + moveDistance;
-    this.result = result;
+    this.result = (blockNumber + this.result) % 36;
+    this.totalDistance = Math.floor(this.distance + moveDistance);
+    console.log('Result: ',this.blockArray[this.result]);
+
     this.angleVelocity = angleVelocity;
     this.acceleration = acceleration;
     const round = await _roundsRepo.createNewRound();
     this.round = round;
   }
 
-  async startNewRound() {
-    console.log(
-      "Wheel started moving at: " +
-        this.angleVelocity +
-        " with acceleration: " +
-        this.acceleration +
-        " for a total of " +
-        this.moveDistance / 10 +
-        " blocks."
-    );
+  async startNewRound(server) {
     this.moving = true;
     this.roundFinished = false;
     this.roundPhase = ROULLETE_PHASE.SPINNING;
+    server.emit('start_wheel');
   }
 
   getPacket() {
@@ -113,6 +123,7 @@ class Roullete {
       angle: this.angle,
       roundTimer: this.roundTimer,
       roundPhase: this.roundPhase,
+      result: this.roundPhase === this.roundPhase.PAUSED ? this.result : 0
     };
     return packet;
   }

@@ -65,7 +65,7 @@
       </template>
     </Modal>
   </div>
-  <div v-else class="w-100 ms-0 me-0 row pt-4">
+  <div v-else class="w-100 p-4 ms-0 me-0 row">
     <button class="btn btn-outline-warning" v-on:click="logIn()">
       Connect Wallet
     </button>
